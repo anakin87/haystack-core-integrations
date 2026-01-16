@@ -53,12 +53,12 @@ jobs:
         working-directory: ${{ steps.pathfinder.outputs.project_path }}
         run: hatch build
 
-      - name: Publish on PyPi
-        working-directory: ${{ steps.pathfinder.outputs.project_path }}
-        env:
-          HATCH_INDEX_USER: __token__
-          HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
-        run: hatch publish -y
+      # - name: Publish on PyPi
+      #   working-directory: ${{ steps.pathfinder.outputs.project_path }}
+      #   env:
+      #     HATCH_INDEX_USER: __token__
+      #     HATCH_INDEX_AUTH: ${{ secrets.PYPI_API_TOKEN }}
+      #   run: hatch publish -y
 
       - name: Generate changelog
         uses: orhun/git-cliff-action@v4
@@ -78,6 +78,6 @@ jobs:
           message: "Update the changelog"
           add: ${{ steps.pathfinder.outputs.project_path }}
           # to avoid that the pushed branch tip is behind its remote counterpart, we need to pull first
-          pull: "--rebase --autostash"
+          pull: "origin main --rebase --autostash"
           push: origin HEAD:main
 
