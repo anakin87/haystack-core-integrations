@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          token: ${{ secrets.HAYSTACK_BOT_TOKEN }}
+          token: ${{ github.token }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -73,8 +73,7 @@ jobs:
       - name: Commit changelog
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: "HaystackBot"
-          author_email: "accounts@deepset.ai"
+          author_name: "bot"
           message: "Update the changelog"
           add: ${{ steps.pathfinder.outputs.project_path }}
           # to avoid that the pushed branch tip is behind its remote counterpart, we need to pull first
