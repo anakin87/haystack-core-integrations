@@ -14,7 +14,6 @@ from kreuzberg import (
     ExtractionConfig,
     ExtractionResult,
     LanguageDetectionConfig,
-    OcrConfig,
     config_to_json,
 )
 
