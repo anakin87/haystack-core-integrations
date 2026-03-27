@@ -53,8 +53,25 @@ jobs:
         if: matrix.python-version == '3.10' && runner.os == 'Linux'
         run: hatch run fmt-check && hatch run test:types
 
-      - name: Run tests
-        run: hatch run test:cov-retry
+      - name: Run unit tests
+        run: hatch run test:unit-cov-xml-retry
+
+      - name: Run integration tests
+        run: hatch run test:integration-retry
+
+      - name: Save PR number
+        if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name == 'pull_request'
+        working-directory: .
+        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+      - name: Upload coverage artifacts
+        if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: |
+            integrations/kreuzberg/coverage.xml
+            pr_number.txt
 
       - name: Run unit tests with lowest direct dependencies
         run: |

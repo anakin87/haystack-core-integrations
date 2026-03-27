@@ -1,0 +1,37 @@
+name: Coverage Comment
+
+on:
+  workflow_run:
+    workflows:
+      - "Test / kreuzberg"
+    types: [completed]
+
+jobs:
+  comment:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: coverage-xml
+
+      - name: Get PR number
+        id: pr
+        run: echo "number=$(cat pr_number.txt)" >> $GITHUB_OUTPUT
+
+      - name: Get integration name from workflow name
+        id: integration
+        run: |
+          # Workflow names follow "Test / <name>" convention
+          echo "name=$(echo '${{ github.event.workflow_run.name }}' | sed 's/Test \/ //')" >> $GITHUB_OUTPUT
+
+      - uses: MishaKav/pytest-coverage-comment@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          pytest-xml-coverage-path: integrations/${{ steps.integration.outputs.name }}/coverage.xml
+          unique-id-for-comment: ${{ steps.integration.outputs.name }}

@@ -67,6 +67,9 @@ unit = 'pytest -m "not integration" {args:tests}'
 integration = 'pytest -m "integration" {args:tests}'
 all = 'pytest {args:tests}'
 cov-retry = 'pytest --cov=haystack_integrations --reruns 3 --reruns-delay 30 -x {args:tests}'
+unit-cov-xml = 'pytest --cov=haystack_integrations --cov-report=xml -m "not integration" {args:tests}'
+unit-cov-xml-retry = 'pytest --cov=haystack_integrations --cov-report=xml --reruns 3 --reruns-delay 30 -x -m "not integration" {args:tests}'
+integration-retry = 'pytest --reruns 3 --reruns-delay 30 -x -m "integration" {args:tests}'
 types = "mypy -p haystack_integrations.components.converters.kreuzberg {args}"
 
 [tool.ruff]
