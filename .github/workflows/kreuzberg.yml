@@ -23,7 +23,7 @@ defaults:
     working-directory: integrations/kreuzberg
 
 concurrency:
-  group: kreuzberg-${{ github.head_ref }}
+  group: kreuzberg-${{ github.head_ref || github.sha }}
   cancel-in-progress: true
 
 env:
@@ -110,6 +110,7 @@ jobs:
           COMMENT_ARTIFACT_NAME: coverage-comment-kreuzberg-combined
 
       - name: Run unit tests with lowest direct dependencies
+        if: github.event_name != 'push'
         run: |
           hatch run uv pip compile pyproject.toml --resolution lowest-direct --output-file requirements_lowest_direct.txt
           hatch -e test env run -- uv pip install -r requirements_lowest_direct.txt
