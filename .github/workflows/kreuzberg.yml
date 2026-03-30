@@ -35,6 +35,9 @@ env:
 jobs:
   compute-test-matrix:
     runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: .
     outputs:
       os: ${{ steps.set.outputs.os }}
       python-version: ${{ steps.set.outputs.python-version }}
