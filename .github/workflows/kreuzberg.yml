@@ -78,6 +78,7 @@ jobs:
           COVERAGE_PATH: integrations/kreuzberg
           SUBPROJECT_ID: kreuzberg
           COMMENT_ARTIFACT_NAME: coverage-comment-kreuzberg
+          ANNOTATE_MISSING_LINES: true
 
       - name: Run unit tests with lowest direct dependencies
         run: |
