@@ -10,6 +10,13 @@ on:
       - "integrations/kreuzberg/**"
       - "!integrations/kreuzberg/*.md"
       - ".github/workflows/kreuzberg.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "integrations/kreuzberg/**"
+      - "!integrations/kreuzberg/*.md"
+      - ".github/workflows/kreuzberg.yml"
 
 defaults:
   run:
@@ -27,6 +34,9 @@ jobs:
   run:
     name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+      pull-requests: write
     strategy:
       fail-fast: false
       matrix:
@@ -57,10 +67,11 @@ jobs:
         run: hatch run test:unit-cov-retry
 
       - name: Run integration tests
+        if: github.event_name != 'push'
         run: hatch run test:integration-retry
 
       - name: Coverage comment
-        if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name == 'pull_request'
+        if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name != 'schedule'
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
           GITHUB_TOKEN: ${{ github.token }}
