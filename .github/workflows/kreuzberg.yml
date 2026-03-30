@@ -29,10 +29,32 @@ concurrency:
 env:
   PYTHONUNBUFFERED: "1"
   FORCE_COLOR: "1"
+  TEST_MATRIX_OS: '["ubuntu-latest", "windows-latest", "macos-latest"]'
+  TEST_MATRIX_PYTHON: '["3.10", "3.14"]'
 
 jobs:
+  compute-test-matrix:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: .
+    outputs:
+      os: ${{ steps.set.outputs.os }}
+      python-version: ${{ steps.set.outputs.python-version }}
+    steps:
+      - id: set
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo 'os=["ubuntu-latest"]' >> $GITHUB_OUTPUT
+            echo 'python-version=["3.10"]' >> $GITHUB_OUTPUT
+          else
+            echo "os=$TEST_MATRIX_OS" >> $GITHUB_OUTPUT
+            echo "python-version=$TEST_MATRIX_PYTHON" >> $GITHUB_OUTPUT
+          fi
+
   run:
     name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+    needs: compute-test-matrix
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -40,8 +62,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
+        os: ${{ fromJSON(needs.compute-test-matrix.outputs.os) }}
+        python-version: ${{ fromJSON(needs.compute-test-matrix.outputs.python-version) }}
 
     steps:
       - name: Support longpaths
@@ -66,11 +88,8 @@ jobs:
       - name: Run unit tests
         run: hatch run test:unit-cov-retry
 
-      - name: Run integration tests
-        if: github.event_name != 'push'
-        run: hatch run test:integration-retry
-
-      - name: Coverage comment
+      # On push: stores coverage baseline on data branch. On PR: generates comment artifact.
+      - name: Store unit tests coverage
         if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name != 'schedule'
         uses: py-cov-action/python-coverage-comment-action@v3
         with:
@@ -78,7 +97,17 @@ jobs:
           COVERAGE_PATH: integrations/kreuzberg
           SUBPROJECT_ID: kreuzberg
           COMMENT_ARTIFACT_NAME: coverage-comment-kreuzberg
-          ANNOTATE_MISSING_LINES: true
+      - name: Run integration tests
+        run: hatch run test:integration-cov-retry
+
+      - name: Store combined coverage
+        if: github.event_name == 'push'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          COVERAGE_PATH: integrations/kreuzberg
+          SUBPROJECT_ID: kreuzberg-combined
+          COMMENT_ARTIFACT_NAME: coverage-comment-kreuzberg-combined
 
       - name: Run unit tests with lowest direct dependencies
         run: |
@@ -92,7 +121,6 @@ jobs:
           hatch env prune
           hatch -e test env run -- uv pip install git+https://github.com/deepset-ai/haystack.git@main
           hatch run test:unit
-
 
   notify-slack-on-failure:
     needs: run
