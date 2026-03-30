@@ -54,24 +54,19 @@ jobs:
         run: hatch run fmt-check && hatch run test:types
 
       - name: Run unit tests
-        run: hatch run test:unit-cov-xml-retry
+        run: hatch run test:unit-cov-retry
 
       - name: Run integration tests
         run: hatch run test:integration-retry
 
-      - name: Save PR number
+      - name: Coverage comment
         if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name == 'pull_request'
-        working-directory: .
-        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
-
-      - name: Upload coverage artifacts
-        if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: py-cov-action/python-coverage-comment-action@v3
         with:
-          name: coverage-xml
-          path: |
-            integrations/kreuzberg/coverage.xml
-            pr_number.txt
+          GITHUB_TOKEN: ${{ github.token }}
+          COVERAGE_PATH: integrations/kreuzberg
+          SUBPROJECT_ID: kreuzberg
+          COMMENT_ARTIFACT_NAME: coverage-comment-kreuzberg
 
       - name: Run unit tests with lowest direct dependencies
         run: |
