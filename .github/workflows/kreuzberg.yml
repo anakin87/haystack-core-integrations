@@ -82,13 +82,13 @@ jobs:
         run: pip install hatch
 
       - name: Lint
-        if: matrix.python-version == '3.10' && runner.os == 'Linux'
+        if: github.event_name != 'push' && matrix.python-version == '3.10' && runner.os == 'Linux'
         run: hatch run fmt-check && hatch run test:types
 
       - name: Run unit tests
         run: hatch run test:unit-cov-retry
 
-      # On push: stores coverage baseline on data branch. On PR: generates comment artifact.
+      # On push to main: stores coverage baseline on data branch. On PR: generates comment artifact.
       - name: Store unit tests coverage
         if: matrix.python-version == '3.10' && runner.os == 'Linux' && github.event_name != 'schedule'
         uses: py-cov-action/python-coverage-comment-action@v3
