@@ -166,6 +166,9 @@ class KreuzbergConverter:
         config_data = data["init_parameters"].get("config")
         if isinstance(config_data, str):
             data["init_parameters"]["config"] = _config_from_json_str(config_data)
+
+        if isinstance(data["init_parameters"].get("easyocr_kwargs"), str):
+            raise ValueError("easyocr_kwargs must be a dictionary, not a string")
         return default_from_dict(cls, data)
 
     def _build_config(self) -> ExtractionConfig:
