@@ -12,6 +12,8 @@ from cohere import AsyncClientV2, ClientV2
 from .embedding_types import EmbeddingTypes
 from .utils import get_async_response, get_response
 
+UNUSED = ""
+
 
 @component
 class CohereDocumentEmbedder:

@@ -14,6 +14,8 @@ from haystack_integrations.components.common.google_genai.utils import _get_clie
 
 logger = logging.getLogger(__name__)
 
+UNUSED = ""
+
 
 @component
 class GoogleGenAIDocumentEmbedder:

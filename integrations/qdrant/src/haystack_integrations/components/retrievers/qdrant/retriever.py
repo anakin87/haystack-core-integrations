@@ -13,6 +13,8 @@ FILTER_POLICY_MERGE_ERROR_MESSAGE = (
     "Set filter_policy to REPLACE or use Haystack filters instead."
 )
 
+UNUSED = ""
+
 
 @component
 class QdrantEmbeddingRetriever:
